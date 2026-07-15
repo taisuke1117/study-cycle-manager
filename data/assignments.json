@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": 1,
+    "subject": "サイバーセキュリティ",
+    "title": "課題",
+    "due_date": "2026-07-30",
+    "status": "not_started",
+    "notes": "17:00締切"
+  },
+  {
+    "id": 2,
+    "subject": "数量ファイナンス",
+    "title": "課題",
+    "due_date": "2026-07-23",
+    "status": "not_started",
+    "notes": "14:50締切"
+  },
+  {
+    "id": 3,
+    "subject": "日本の未来と個人の役割",
+    "title": "課題",
+    "due_date": "2026-08-03",
+    "status": "not_started",
+    "notes": "24:00締切"
+  },
+  {
+    "id": 4,
+    "subject": "経済学とコンピューターサイエンス",
+    "title": "課題",
+    "due_date": "2026-08-07",
+    "status": "not_started",
+    "notes": "24:00締切"
+  }
+]
