@@ -56,6 +56,11 @@ python3 study_manager.py upcoming
 python3 study_manager.py upcoming --days 7   # 7日以内のものだけ
 ```
 
+## 課題・試験用ファイルの置き場所
+
+`materials/<科目名>/` に、その科目の課題・試験に関するファイル（資料、下書き、提出物など）を置きます。
+チャットでファイルを送ってもらえれば、該当する科目のフォルダに保存します。
+
 ## データ形式
 
 `data/assignments.json`:
