@@ -1,1 +1,47 @@
-[]
+[
+  {
+    "id": 1,
+    "subject": "経済学のための数学",
+    "title": "試験",
+    "date": "2026-07-24",
+    "scope": "",
+    "status": "not_started",
+    "notes": "2限"
+  },
+  {
+    "id": 2,
+    "subject": "経営分析2",
+    "title": "試験",
+    "date": "2026-07-24",
+    "scope": "",
+    "status": "not_started",
+    "notes": "3限"
+  },
+  {
+    "id": 3,
+    "subject": "現代日本経済史",
+    "title": "試験",
+    "date": "2026-07-30",
+    "scope": "",
+    "status": "not_started",
+    "notes": "2限"
+  },
+  {
+    "id": 4,
+    "subject": "財政2",
+    "title": "試験",
+    "date": "2026-07-30",
+    "scope": "",
+    "status": "not_started",
+    "notes": "3限"
+  },
+  {
+    "id": 5,
+    "subject": "商法第一部",
+    "title": "試験",
+    "date": "2026-07-31",
+    "scope": "",
+    "status": "not_started",
+    "notes": "2限"
+  }
+]
