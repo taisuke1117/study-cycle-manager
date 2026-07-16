@@ -1,0 +1,984 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ふたりすごろく 〜ドキドキ・ロード〜</title>
+
+<!-- =========================================================
+  ふたりすごろく 〜ドキドキ・ロード〜
+  カップル2人用・所要時間 約1時間・単一HTML（依存ゼロ）
+  ブラウザで開くだけで遊べます。
+  カード内容はすぐ下の CARDS を編集すれば自由に増やせます。
+========================================================== -->
+
+<script>
+/* ============================================================
+   カードデータ（種類 × スパイス度）
+   pure=ピュア / amaama=あまあま / otona=おとな
+   ここを編集すれば内容を自由に追加・変更できます。
+============================================================ */
+const CARDS = {
+  // ❤️ トーク（質問）
+  talk: {
+    pure: [
+      "付き合って（出会って）一番うれしかった瞬間は？",
+      "相手の第一印象は？正直に。",
+      "相手のどんな仕草にキュンとする？",
+      "一緒に行ってみたい場所ベスト3は？",
+      "相手の好きなところを、理由つきで3つ挙げて。",
+      "生まれ変わっても、また相手と付き合いたい？その心は？",
+      "最近、相手に『ありがとう』と思ったことは？",
+      "相手の笑顔で一番好きな瞬間はいつ？",
+      "子どもの頃の夢は？相手は当てられる？",
+      "相手にまだ言ってない、小さな秘密を1つ。",
+      "次の休みに2人でやりたいことは？",
+      "相手の好きな食べ物を3つ、当ててみて。",
+      "付き合う前、相手のことをどう思ってた？",
+      "2人の思い出の中で、一番のお気に入りは？",
+      "相手を動物にたとえると？その理由は？",
+    ],
+    amaama: [
+      "相手のどこに一番ドキッとする？",
+      "初めて『好き』と自覚した瞬間は？",
+      "相手にされて一番うれしかったスキンシップは？",
+      "2人だけの秘密のあだ名を、この場で決めよう。",
+      "相手の寝顔と起きたての顔、どっちが好き？",
+      "キスするなら、どんなシチュエーションが理想？",
+      "相手に色気を感じるのはどんな瞬間？",
+      "今すぐハグとキス、どっちしてほしい？",
+      "相手のこと、10段階でどれくらい好き？その心は？",
+      "付き合ってから一番ドキドキしたデートは？",
+      "相手のどの服装（私服）が一番好き？",
+      "理想のおうちデートを2人で語り合って。",
+      "甘えたいとき、どうやって甘えるのが好き？",
+      "『もっとしてほしいこと』を1つおねだりして。",
+      "相手の唇・手・目、パーツで一番好きなのは？",
+    ],
+    otona: [
+      "相手が一番セクシーだと思う瞬間は？",
+      "今まで言えなかった、ちょっと大胆な願望を1つ。",
+      "理想のシチュエーションを、恥ずかしがらずに語って。",
+      "相手の体で一番好きなところは？正直に。",
+      "2人きりの夜、何をしているときが一番幸せ？",
+      "『攻め』と『受け』、自分はどっち派？相手は？",
+      "これまでで一番ドキドキした2人の夜は？",
+      "相手にこっそり試してみたいことはある？",
+      "目を見て『愛してる』を、一番セクシーに言ってみて。",
+      "相手のどんな声・言葉に弱い？",
+      "今夜そっとしてほしいことを、耳打ちで伝えて。",
+      "相手を独り占めしたくなるのはどんなとき？",
+      "恥ずかしくて普段言えない本音を、1つだけ。",
+      "相手にされてゾクッとしたことは？",
+      "2人だけの秘密にしたい約束を、今ここで1つ。",
+    ],
+  },
+
+  // 💋 スキンシップ・ミッション
+  mission: {
+    pure: [
+      "相手の目を10秒間、笑わずに見つめる。",
+      "相手の好きなところを、声に出して5つ褒める。",
+      "相手とハイタッチ＆グータッチ！",
+      "相手の似顔絵を30秒で描いて見せる。",
+      "相手のモノマネをして、当ててもらう。",
+      "相手に『大好き』と元気よく伝える。",
+      "相手と背中合わせで10秒キープ。",
+      "相手の手を握って、感謝をひとこと。",
+      "2人で変顔をして自撮りを1枚。",
+      "相手をあだ名で3回呼ぶ。",
+      "相手の肩を10秒マッサージ。",
+      "一緒に同じポーズで記念写真。",
+      "相手に今日いちばんの笑顔を向ける。",
+      "相手の好きなところを1つ、理由つきで熱く語る。",
+    ],
+    amaama: [
+      "相手をやさしく10秒ハグする。",
+      "相手の頭を、よしよしと10秒なでる。",
+      "相手の手のひらに『好き』と指で書いて、当ててもらう。",
+      "相手のほっぺにキス。",
+      "相手を膝枕して30秒。",
+      "相手の耳元で『好きだよ』とささやく。",
+      "お姫様/王子様抱っこに挑戦（真似でもOK）。",
+      "相手と手をつないで部屋を1周。",
+      "相手を後ろからそっと抱きしめる。",
+      "相手の好きなところを、耳元で3つささやく。",
+      "額をくっつけて、10秒見つめ合う。",
+      "相手の髪をやさしく整えてあげる。",
+      "相手にラブソングのサビをワンフレーズ歌う。",
+      "相手をぎゅっとして『離さない』と言う。",
+    ],
+    otona: [
+      "相手に、情熱的に10秒キス。",
+      "相手の首すじにそっとキス。",
+      "相手を(やさしく)壁際にエスコートして、見つめる。",
+      "相手の耳元で、今夜の希望をささやく。",
+      "相手をバックハグして、耳元に『好き』を3回。",
+      "相手の唇を、親指でそっとなぞる。",
+      "目を見つめながら、色っぽく相手の名前を呼ぶ。",
+      "相手を膝の上に乗せて（or 乗って）30秒。",
+      "相手が指定した場所に、10秒キス。",
+      "スローダンスを1曲、体を寄せて踊る。",
+      "相手の手を取り、指先に順番にキス。",
+      "相手を見つめて『今夜は帰さない』と言う。",
+      "相手の望むスキンシップを1つ、リクエスト通りに。",
+      "目を閉じた相手のどこかにキス。どこか当ててもらう。",
+    ],
+  },
+
+  // ⭐ ドキドキタイム（特別カード・高スパイス）
+  dokidoki: {
+    pure: [
+      "【ドキドキタイム】2人でぎゅーっと20秒ハグ！",
+      "【ドキドキタイム】相手の好きなところを交互に言い合い、詰まった方が1マス戻る。",
+      "【ドキドキタイム】見つめ合って10秒、先に笑った方が追加でミッション1枚。",
+      "【ドキドキタイム】2人で『せーの』でお互いの好きなところを同時に言う。",
+    ],
+    amaama: [
+      "【ドキドキタイム】30秒間、見つめ合ったままやさしくハグ。",
+      "【ドキドキタイム】お互いの『一番好きなキスの場所』にキス。",
+      "【ドキドキタイム】相手の好きなところを交互に告白、止まった方が追加ミッション。",
+      "【ドキドキタイム】30秒、相手の耳元で好きな理由をささやき続ける。",
+    ],
+    otona: [
+      "【ドキドキタイム】1分間、声を出さずに見つめ合ってスキンシップ。",
+      "【ドキドキタイム】相手のお願いを1つ何でも叶える『わがまま券』を即発行。",
+      "【ドキドキタイム】照明を少し落として、情熱的なキスを30秒。",
+      "【ドキドキタイム】相手を膝に乗せ、目を見つめて今夜の約束を交わす。",
+    ],
+  },
+
+  // 🎁 ごほうび券
+  coupon: [
+    "肩もみ10分券", "ぎゅー3回券", "デート行き先 決定権", "何でも1つおねだり券",
+    "手つなぎお散歩券", "好きな料理リクエスト券", "膝枕30分券", "いちゃいちゃ独占券",
+    "ごろごろ許可券", "今日は私/僕に従って券", "キス1回券", "朝までべったり券",
+  ],
+};
+
+// 🎲 ハプニング（進行イベント）
+const HAPPENINGS = [
+  { text: "ラッキー💕 手をつないでスキップ！2マス進む。", type: "move", n: 2 },
+  { text: "ノリノリ！ダッシュで3マス進む。", type: "move", n: 3 },
+  { text: "見つめ合いすぎて足が止まる…1マス戻る。", type: "move", n: -1 },
+  { text: "忘れ物に気づいた！2マス戻る。", type: "move", n: -2 },
+  { text: "ふたりの運命が入れ替わる！相手と位置をチェンジ。", type: "swap" },
+  { text: "テンションMAX！もう一度サイコロを振れる。", type: "extra" },
+  { text: "ひとやすみ☕ 次の自分の手番は1回お休み。", type: "skip" },
+];
+</script>
+
+<style>
+  :root{
+    --bg1:#ffdfe7; --bg2:#e6d6ff; --bg3:#ffe9d6;
+    --card:#ffffff; --ink:#3a2a35; --muted:#8a7a84;
+    --pink:#ff5c8a; --pink-d:#e23e6f; --purple:#8b5cf6; --gold:#f5b301;
+    --line:#f0dfe7; --shadow:0 10px 30px rgba(180,60,110,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg1:#2a1730; --bg2:#1d1530; --bg3:#301a26;
+      --card:#2b2233; --ink:#f4e9ef; --muted:#b9a7b4;
+      --line:#41303c; --shadow:0 10px 30px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    background-attachment:fixed;
+    min-height:100vh;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  #app{max-width:560px; margin:0 auto; padding:14px; min-height:100vh}
+  h1,h2,h3{margin:0 0 .4em}
+  button{font-family:inherit; cursor:pointer; border:none}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.4em;
+    background:linear-gradient(135deg,var(--pink),var(--pink-d));
+    color:#fff; font-weight:700; font-size:1.05rem;
+    padding:14px 20px; border-radius:16px; box-shadow:var(--shadow);
+    transition:transform .08s ease, filter .15s ease; width:100%;
+  }
+  .btn:active{transform:scale(.96)}
+  .btn.ghost{background:var(--card); color:var(--ink); border:2px solid var(--line); box-shadow:none}
+  .btn.gold{background:linear-gradient(135deg,#ffd45c,var(--gold)); color:#5a4200}
+  .btn.small{padding:9px 12px; font-size:.9rem; border-radius:12px; width:auto}
+  .btn:disabled{filter:grayscale(.6) opacity(.6); pointer-events:none}
+  .panel{background:var(--card); border-radius:22px; padding:18px; box-shadow:var(--shadow); border:1px solid var(--line)}
+  .muted{color:var(--muted)}
+  .center{text-align:center}
+  .row{display:flex; gap:10px}
+  .row.wrap{flex-wrap:wrap}
+  label{font-weight:700; font-size:.9rem}
+  input[type=text]{
+    width:100%; padding:12px 14px; font-size:1rem; border-radius:12px;
+    border:2px solid var(--line); background:var(--card); color:var(--ink);
+  }
+  .hidden{display:none !important}
+
+  /* ---- Setup ---- */
+  .title-wrap{text-align:center; padding:18px 8px 6px}
+  .title-wrap .sub{color:var(--muted); font-size:.9rem}
+  .big-emoji{font-size:2.6rem; filter:drop-shadow(0 4px 8px rgba(226,62,111,.4))}
+  .seg{display:flex; gap:8px; flex-wrap:wrap}
+  .seg .opt{
+    flex:1 1 30%; text-align:center; padding:12px 8px; border-radius:14px;
+    background:var(--card); border:2px solid var(--line); font-weight:700; font-size:.92rem;
+  }
+  .seg .opt small{display:block; font-weight:500; color:var(--muted); font-size:.72rem; margin-top:2px}
+  .seg .opt.active{border-color:var(--pink); background:linear-gradient(135deg,rgba(255,92,138,.14),rgba(139,92,246,.12)); color:var(--pink-d)}
+  .player-emojis{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px}
+  .player-emojis .em{font-size:1.4rem; padding:6px 8px; border-radius:12px; border:2px solid var(--line); background:var(--card)}
+  .player-emojis .em.active{border-color:var(--purple); background:rgba(139,92,246,.14)}
+
+  /* ---- Game header / meter ---- */
+  .gamehead{position:sticky; top:0; z-index:5; padding-top:4px; background:linear-gradient(180deg,var(--bg2),rgba(0,0,0,0)); }
+  .meter-wrap{background:var(--card); border-radius:16px; padding:10px 12px; box-shadow:var(--shadow); border:1px solid var(--line)}
+  .meter-top{display:flex; justify-content:space-between; align-items:center; font-size:.8rem; font-weight:700}
+  .meter-bar{height:16px; border-radius:10px; background:var(--line); overflow:hidden; margin-top:5px; position:relative}
+  .meter-fill{height:100%; width:0%; border-radius:10px; background:linear-gradient(90deg,#ff9bb8,var(--pink),var(--purple)); transition:width .5s ease}
+  .meter-heart{position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:.9rem}
+  .toolbar{display:flex; gap:6px; margin-top:8px; justify-content:center; flex-wrap:wrap}
+
+  /* ---- Board ---- */
+  #board{
+    display:flex; flex-wrap:wrap; gap:6px; margin:12px 0;
+    background:var(--card); padding:12px; border-radius:20px; box-shadow:var(--shadow); border:1px solid var(--line);
+  }
+  .cell{
+    width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    font-size:1.15rem; position:relative; background:rgba(255,92,138,.06); border:1px solid var(--line);
+  }
+  .cell.start{background:linear-gradient(135deg,#c9f7d6,#a7ecc0)}
+  .cell.goal{background:linear-gradient(135deg,#ffe08a,#ffce4d)}
+  .cell.talk{background:rgba(255,92,138,.12)}
+  .cell.mission{background:rgba(226,62,111,.16)}
+  .cell.duel{background:rgba(139,92,246,.16)}
+  .cell.happening{background:rgba(52,152,219,.14)}
+  .cell.dokidoki{background:radial-gradient(circle,rgba(255,92,138,.35),rgba(139,92,246,.25))}
+  .cell.reward{background:rgba(245,179,1,.18)}
+  .cell.cur{outline:3px solid var(--pink); outline-offset:1px; z-index:2}
+  .cell .idx{position:absolute; top:1px; left:3px; font-size:.5rem; color:var(--muted)}
+  .tokens{position:absolute; bottom:-3px; right:-3px; display:flex}
+  .token{font-size:1rem; transition:transform .2s ease; filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+  .token.hop{animation:hop .26s ease}
+  @keyframes hop{50%{transform:translateY(-10px) scale(1.2)}}
+
+  /* ---- Players + dice ---- */
+  .players{display:flex; gap:10px; margin-bottom:10px}
+  .pcard{flex:1; background:var(--card); border-radius:16px; padding:10px 12px; border:2px solid var(--line); box-shadow:var(--shadow)}
+  .pcard.active{border-color:var(--pink); background:linear-gradient(135deg,rgba(255,92,138,.10),rgba(139,92,246,.08))}
+  .pcard .pname{font-weight:800; font-size:1rem; display:flex; align-items:center; gap:5px}
+  .pcard .pmeta{font-size:.72rem; color:var(--muted); margin-top:2px}
+  .dice-area{text-align:center; margin:6px 0 20px}
+  .die{
+    width:78px; height:78px; margin:6px auto 12px; border-radius:18px; background:#fff; color:#e23e6f;
+    display:flex; align-items:center; justify-content:center; font-size:2.6rem; font-weight:800;
+    box-shadow:0 8px 20px rgba(226,62,111,.35); border:3px solid #ffd6e2;
+  }
+  .die.rolling{animation:shake .12s infinite}
+  @keyframes shake{0%{transform:rotate(-14deg) scale(1.05)}50%{transform:rotate(14deg) scale(.95)}100%{transform:rotate(-14deg)}}
+  .turn-label{font-weight:800; font-size:1.05rem; margin-bottom:2px}
+
+  /* ---- Modal / overlay ---- */
+  .overlay{position:fixed; inset:0; background:rgba(30,10,25,.55); backdrop-filter:blur(4px); z-index:20;
+    display:flex; align-items:center; justify-content:center; padding:18px; animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{width:100%; max-width:440px; background:var(--card); border-radius:26px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.4);
+    border:1px solid var(--line); animation:pop .28s cubic-bezier(.2,1.2,.3,1)}
+  @keyframes pop{from{transform:scale(.85) translateY(20px); opacity:0}to{transform:none; opacity:1}}
+  .sheet .tag{display:inline-block; font-size:.72rem; font-weight:800; padding:4px 12px; border-radius:999px; margin-bottom:10px}
+  .sheet .card-icon{font-size:2.6rem; text-align:center; display:block; margin-bottom:6px}
+  .sheet h2{font-size:1.35rem; text-align:center; line-height:1.4}
+  .sheet .btns{display:flex; flex-direction:column; gap:9px; margin-top:18px}
+  .tag.talk{background:rgba(255,92,138,.15); color:var(--pink-d)}
+  .tag.mission{background:rgba(226,62,111,.18); color:var(--pink-d)}
+  .tag.duel{background:rgba(139,92,246,.18); color:var(--purple)}
+  .tag.happening{background:rgba(52,152,219,.18); color:#2277b8}
+  .tag.reward{background:rgba(245,179,1,.2); color:#a67c00}
+  .tag.dokidoki{background:linear-gradient(135deg,var(--pink),var(--purple)); color:#fff}
+
+  /* ---- Minigame ---- */
+  .mg-pad{width:100%; min-height:150px; border-radius:20px; font-size:1.3rem; font-weight:800; color:#fff; margin:12px 0}
+  .mg-count{font-size:3rem; font-weight:900; text-align:center; margin:8px 0}
+  .mg-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0}
+  .mg-mem{aspect-ratio:1; border-radius:18px; font-size:2rem; display:flex; align-items:center; justify-content:center; opacity:.55; transition:opacity .12s, transform .12s}
+  .mg-mem.lit{opacity:1; transform:scale(1.06)}
+  .mg-mem.m0{background:#ff6b8a} .mg-mem.m1{background:#5bd6a5} .mg-mem.m2{background:#5aa9ff} .mg-mem.m3{background:#ffce4d}
+
+  /* ---- Toast ---- */
+  #toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(30px); opacity:0;
+    background:rgba(40,15,35,.92); color:#fff; padding:11px 18px; border-radius:999px; font-weight:700; font-size:.9rem;
+    z-index:40; transition:.3s; pointer-events:none; max-width:90%; text-align:center}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  /* ---- Confetti ---- */
+  .confetti{position:fixed; top:-30px; font-size:1.4rem; z-index:15; pointer-events:none; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(360deg); opacity:.9}}
+
+  .list-coupons{list-style:none; padding:0; margin:8px 0; display:flex; flex-wrap:wrap; gap:6px}
+  .list-coupons li{background:rgba(245,179,1,.16); border:1px solid rgba(245,179,1,.4); padding:4px 10px; border-radius:999px; font-size:.8rem; font-weight:700}
+</style>
+
+<div id="app">
+  <!-- =============== セットアップ画面 =============== -->
+  <section id="screen-setup">
+    <div class="title-wrap">
+      <div class="big-emoji">💞🎲</div>
+      <h1>ふたりすごろく</h1>
+      <div class="sub">〜 ドキドキ・ロード 〜</div>
+    </div>
+
+    <div class="panel" style="margin-top:8px">
+      <div id="resume-box" class="hidden" style="margin-bottom:14px">
+        <button class="btn gold" id="btn-resume">▶ 続きから遊ぶ</button>
+        <p class="muted center" style="font-size:.78rem; margin:8px 0 0">前回の途中から再開できます</p>
+        <hr style="border:none; border-top:1px solid var(--line); margin:14px 0">
+      </div>
+
+      <label>プレイヤー①</label>
+      <input type="text" id="p1name" placeholder="なまえ（例：たいすけ）" maxlength="8" value="プレイヤー1">
+      <div class="player-emojis" id="p1emojis"></div>
+
+      <div style="height:14px"></div>
+      <label>プレイヤー②</label>
+      <input type="text" id="p2name" placeholder="なまえ（例：あいて）" maxlength="8" value="プレイヤー2">
+      <div class="player-emojis" id="p2emojis"></div>
+
+      <div style="height:18px"></div>
+      <label>💗 スパイス度</label>
+      <div class="seg" id="seg-spice" style="margin-top:6px">
+        <div class="opt" data-v="pure">ピュア<small>健全・照れる系</small></div>
+        <div class="opt active" data-v="amaama">あまあま<small>甘め・スキンシップ</small></div>
+        <div class="opt" data-v="otona">おとな<small>際どめ・大人向け</small></div>
+      </div>
+
+      <div style="height:16px"></div>
+      <label>⏱ ボードの長さ（所要時間の目安）</label>
+      <div class="seg" id="seg-len" style="margin-top:6px">
+        <div class="opt" data-v="20">ライト<small>約30分・20マス</small></div>
+        <div class="opt active" data-v="32">スタンダード<small>約60分・32マス</small></div>
+        <div class="opt" data-v="44">じっくり<small>約90分・44マス</small></div>
+      </div>
+
+      <div style="height:22px"></div>
+      <button class="btn" id="btn-start">💘 ゲームスタート</button>
+      <p class="muted center" style="font-size:.74rem; margin:12px 0 0">
+        ※ 無理は禁物。イヤなカードは「パス」（1回だけ／1マス戻る）でOK。<br>2人が笑顔で楽しめる範囲で遊んでね。
+      </p>
+    </div>
+    <p class="muted center" style="font-size:.7rem; margin-top:14px">スパイス度はゲーム中でも変更できます 🌶️</p>
+  </section>
+
+  <!-- =============== ゲーム画面 =============== -->
+  <section id="screen-game" class="hidden">
+    <div class="gamehead">
+      <div class="meter-wrap">
+        <div class="meter-top">
+          <span>💓 ドキドキメーター</span>
+          <span id="meter-pct">0%</span>
+        </div>
+        <div class="meter-bar"><div class="meter-fill" id="meter-fill"></div><span class="meter-heart">💗</span></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost small" id="btn-spice">🌶️ <span id="spice-label">あまあま</span></button>
+        <button class="btn ghost small" id="btn-sound">🔊 音ON</button>
+        <button class="btn ghost small" id="btn-reset">↺ 最初から</button>
+      </div>
+    </div>
+
+    <div id="board"></div>
+
+    <div class="players" id="players"></div>
+
+    <div class="dice-area">
+      <div class="turn-label" id="turn-label"></div>
+      <div class="die" id="die">🎲</div>
+      <button class="btn" id="btn-roll">🎲 サイコロを振る</button>
+    </div>
+  </section>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   ゲーム本体
+============================================================ */
+const EMOJIS = ["🐻","🐰","🐱","🐶","🦊","🐼","🐯","🦁","🐮","🐧","🦄","🐸"];
+const SAVE_KEY = "dokidoki-road-save-v1";
+const SPICE_LABEL = { pure:"ピュア", amaama:"あまあま", otona:"おとな" };
+const CELL_ICON = { start:"🚩", goal:"🏁", talk:"❤️", mission:"💋", duel:"⚔️", happening:"🎲", dokidoki:"⭐", reward:"🎁" };
+
+let state = null;
+let sound = false;
+let audioCtx = null;
+let busy = false; // アニメ・モーダル中の多重操作防止
+
+/* ---------- 効果音（WebAudio・依存なし） ---------- */
+function beep(freq=440, dur=0.08, type="sine", vol=0.2){
+  if(!sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+dur);
+    o.start(); o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+const sfx = {
+  step:()=>beep(660,0.05,"square",0.12),
+  dice:()=>beep(320,0.06,"triangle",0.15),
+  good:()=>{beep(660,0.1,"sine",0.2); setTimeout(()=>beep(880,0.14,"sine",0.2),90);},
+  love:()=>{beep(523,0.1); setTimeout(()=>beep(659,0.1),100); setTimeout(()=>beep(784,0.18),200);},
+  win:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.18,"sine",0.22),i*120));},
+};
+
+/* ---------- Toast ---------- */
+let toastTimer=null;
+function toast(msg, ms=2000){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"), ms);
+}
+
+/* ---------- セットアップUI ---------- */
+let pick = { p1:0, p2:1, spice:"amaama", len:32 };
+function buildSetup(){
+  const wrap1=document.getElementById("p1emojis"), wrap2=document.getElementById("p2emojis");
+  EMOJIS.forEach((e,i)=>{
+    const a=document.createElement("button"); a.className="em"+(i===pick.p1?" active":""); a.textContent=e;
+    a.onclick=()=>{ pick.p1=i; if(pick.p2===i) pick.p2=(i+1)%EMOJIS.length; renderEmojis(); };
+    wrap1.appendChild(a);
+    const b=document.createElement("button"); b.className="em"+(i===pick.p2?" active":""); b.textContent=e;
+    b.onclick=()=>{ pick.p2=i; if(pick.p1===i) pick.p1=(i+1)%EMOJIS.length; renderEmojis(); };
+    wrap2.appendChild(b);
+  });
+  function renderEmojis(){
+    [...wrap1.children].forEach((c,i)=>c.classList.toggle("active",i===pick.p1));
+    [...wrap2.children].forEach((c,i)=>c.classList.toggle("active",i===pick.p2));
+  }
+  document.querySelectorAll("#seg-spice .opt").forEach(o=>o.onclick=()=>{
+    pick.spice=o.dataset.v; document.querySelectorAll("#seg-spice .opt").forEach(x=>x.classList.toggle("active",x===o));
+  });
+  document.querySelectorAll("#seg-len .opt").forEach(o=>o.onclick=()=>{
+    pick.len=+o.dataset.v; document.querySelectorAll("#seg-len .opt").forEach(x=>x.classList.toggle("active",x===o));
+  });
+  // 続きから
+  if(localStorage.getItem(SAVE_KEY)){
+    document.getElementById("resume-box").classList.remove("hidden");
+    document.getElementById("btn-resume").onclick=()=>{ if(loadGame()) startGameUI(); };
+  }
+  document.getElementById("btn-start").onclick=newGame;
+}
+
+/* ---------- ボード生成 ---------- */
+function generateBoard(len){
+  const board=new Array(len);
+  board[0]="start"; board[len-1]="goal";
+  const weighted=[];
+  const dist={ talk:28, mission:28, duel:16, happening:12, dokidoki:8, reward:8 };
+  for(const k in dist){ for(let i=0;i<dist[k];i++) weighted.push(k); }
+  let last=null;
+  for(let i=1;i<len-1;i++){
+    let t, guard=0;
+    do{ t=weighted[Math.floor(Math.random()*weighted.length)]; guard++; }
+    while(t===last && guard<6); // 同種の連続をなるべく避ける
+    board[i]=t; last=t;
+  }
+  // 最初の1マスはやさしめに
+  if(board[1]==="dokidoki"||board[1]==="duel") board[1]="talk";
+  return board;
+}
+
+/* ---------- 新規ゲーム ---------- */
+function newGame(){
+  const n1=(document.getElementById("p1name").value||"プレイヤー1").trim().slice(0,8)||"プレイヤー1";
+  const n2=(document.getElementById("p2name").value||"プレイヤー2").trim().slice(0,8)||"プレイヤー2";
+  state={
+    players:[
+      {name:n1, emoji:EMOJIS[pick.p1], pos:0, pass:1, skip:false, coupons:[]},
+      {name:n2, emoji:EMOJIS[pick.p2], pos:0, pass:1, skip:false, coupons:[]},
+    ],
+    turn:0, meter:0, spice:pick.spice, len:pick.len,
+    board:generateBoard(pick.len), finished:false, extra:false, dokidokiCount:0,
+  };
+  saveGame();
+  startGameUI();
+  sfx.love();
+  toast("スタート！先にゴールした方が勝ち💕", 2600);
+}
+
+function startGameUI(){
+  document.getElementById("screen-setup").classList.add("hidden");
+  document.getElementById("screen-game").classList.remove("hidden");
+  renderAll();
+  window.scrollTo(0,0);
+}
+
+/* ---------- 保存・復元 ---------- */
+function saveGame(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){} }
+function loadGame(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SAVE_KEY));
+    if(!s||!s.players) return false;
+    state=s; return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- レンダリング ---------- */
+function renderAll(){ renderMeter(); renderBoard(); renderPlayers(); renderTurn(); updateSpiceLabel(); }
+
+function renderMeter(){
+  document.getElementById("meter-fill").style.width=state.meter+"%";
+  document.getElementById("meter-pct").textContent=Math.round(state.meter)+"%";
+}
+function renderBoard(){
+  const b=document.getElementById("board"); b.innerHTML="";
+  state.board.forEach((type,i)=>{
+    const c=document.createElement("div"); c.className="cell "+type; c.dataset.i=i;
+    const cur = state.players.some(p=>p.pos===i);
+    if(cur) c.classList.add("cur");
+    c.innerHTML=`<span class="idx">${i===0?"":i}</span>${CELL_ICON[type]||""}`;
+    const tk=document.createElement("div"); tk.className="tokens";
+    state.players.forEach((p,pi)=>{ if(p.pos===i){ const s=document.createElement("span"); s.className="token"; s.dataset.p=pi; s.textContent=p.emoji; tk.appendChild(s);} });
+    c.appendChild(tk);
+    b.appendChild(c);
+  });
+}
+function renderPlayers(){
+  const wrap=document.getElementById("players"); wrap.innerHTML="";
+  state.players.forEach((p,i)=>{
+    const d=document.createElement("div"); d.className="pcard"+(i===state.turn?" active":"");
+    d.innerHTML=`<div class="pname">${p.emoji} ${escapeHtml(p.name)}</div>
+      <div class="pmeta">${p.pos>=state.len-1?"🏁 ゴール！":("あと "+(state.len-1-p.pos)+" マス")}
+      ・パス${p.pass}回 ・🎁${p.coupons.length}</div>`;
+    wrap.appendChild(d);
+  });
+}
+function renderTurn(){
+  const p=state.players[state.turn];
+  document.getElementById("turn-label").textContent = state.finished? "ゲーム終了" : `${p.emoji} ${p.name} の番`;
+}
+function updateSpiceLabel(){
+  document.getElementById("spice-label").textContent=SPICE_LABEL[state.spice];
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+/* ---------- サイコロ ---------- */
+function rollDice(){
+  if(busy||state.finished) return;
+  busy=true;
+  const die=document.getElementById("die");
+  document.getElementById("btn-roll").disabled=true;
+  die.classList.add("rolling");
+  let ticks=0;
+  const iv=setInterval(()=>{ die.textContent=1+Math.floor(Math.random()*6); sfx.dice(); ticks++;
+    if(ticks>8){ clearInterval(iv);
+      const n=1+Math.floor(Math.random()*6);
+      die.textContent=n; die.classList.remove("rolling");
+      toast("🎲 "+n+" が出た！");
+      setTimeout(()=>moveForward(state.turn, n), 350);
+    }
+  },90);
+}
+
+function moveForward(pi, steps){
+  const p=state.players[pi]; let rem=steps;
+  const iv=setInterval(()=>{
+    if(rem<=0){ clearInterval(iv); arrive(pi); return; }
+    p.pos++; rem--; sfx.step(); renderBoard(); hop(pi); scrollToCurrent();
+    if(p.pos>=state.len-1){ p.pos=state.len-1; clearInterval(iv); renderPlayers(); arrive(pi); return; }
+    renderPlayers();
+  },260);
+}
+function moveBy(pi, delta, cb){ // ハプニング用（前後移動、ゴール判定なし）
+  const p=state.players[pi]; let rem=Math.abs(delta); const dir=Math.sign(delta);
+  const iv=setInterval(()=>{
+    if(rem<=0){ clearInterval(iv); if(cb)cb(); return; }
+    p.pos=Math.max(0, Math.min(state.len-1, p.pos+dir)); rem--; sfx.step();
+    renderBoard(); hop(pi); renderPlayers(); scrollToCurrent();
+  },240);
+}
+function hop(pi){ const t=document.querySelector(`.token[data-p="${pi}"]`); if(t){ t.classList.add("hop"); setTimeout(()=>t.classList.remove("hop"),260);} }
+function scrollToCurrent(){ const el=document.querySelector(".cell.cur"); if(el) el.scrollIntoView({block:"nearest",behavior:"smooth"}); }
+
+/* ---------- マス到着 ---------- */
+function arrive(pi){
+  saveGame();
+  const p=state.players[pi];
+  if(p.pos>=state.len-1){ return finale(pi); }
+  const type=state.board[p.pos];
+  switch(type){
+    case "talk": openCard("talk"); break;
+    case "mission": openCard("mission"); break;
+    case "dokidoki": openDokidoki(false); break;
+    case "reward": openReward(); break;
+    case "happening": openHappening(); break;
+    case "duel": startDuel(); break;
+    default: finishEvent(0);
+  }
+}
+
+/* ---------- メーター加算・オーバーフロー ---------- */
+function gainMeter(amount){
+  state.meter=Math.min(100, state.meter+amount);
+  renderMeter();
+}
+// イベント終了の共通出口：メーター加算→満タンならドキドキタイム→手番交代
+function finishEvent(meterAmount, allowOverflow=true){
+  gainMeter(meterAmount);
+  saveGame();
+  if(allowOverflow && state.meter>=100){
+    state.meter=0; state.dokidokiCount++; renderMeter();
+    setTimeout(()=>{ sfx.love(); openDokidoki(true); }, 400);
+  } else {
+    endTurn();
+  }
+}
+
+/* ---------- 手番交代 ---------- */
+function endTurn(){
+  busy=false;
+  document.getElementById("btn-roll").disabled=false;
+  if(state.finished) return;
+  if(state.extra){ state.extra=false; renderPlayers(); renderTurn(); toast("もう一度どうぞ！"); saveGame(); return; }
+  state.turn=1-state.turn;
+  // 1回休み
+  if(state.players[state.turn].skip){
+    state.players[state.turn].skip=false;
+    toast(`${state.players[state.turn].name} は1回休み 😴`);
+    state.turn=1-state.turn;
+  }
+  renderPlayers(); renderTurn(); saveGame();
+}
+
+/* ---------- モーダル ---------- */
+function showModal({tag, tagClass, icon, title, html, buttons}){
+  closeModal();
+  const ov=document.createElement("div"); ov.className="overlay"; ov.id="modal";
+  const btns=(buttons||[]).map((b,i)=>`<button class="btn ${b.cls||''}" data-i="${i}">${b.label}</button>`).join("");
+  ov.innerHTML=`<div class="sheet">
+    ${tag?`<span class="tag ${tagClass||''}">${tag}</span>`:""}
+    ${icon?`<span class="card-icon">${icon}</span>`:""}
+    ${title?`<h2>${title}</h2>`:""}
+    ${html||""}
+    <div class="btns">${btns}</div></div>`;
+  document.body.appendChild(ov);
+  (buttons||[]).forEach((b,i)=>{ ov.querySelector(`[data-i="${i}"]`).onclick=()=>b.onClick(); });
+  return ov;
+}
+function closeModal(){ const m=document.getElementById("modal"); if(m) m.remove(); }
+
+function pick_(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ---------- ❤️/💋 カード ---------- */
+function openCard(kind){
+  const p=state.players[state.turn];
+  const text=pick_(CARDS[kind][state.spice]);
+  const meta = kind==="talk"
+    ? {tag:"トークマス", tagClass:"talk", icon:"❤️", gain:8}
+    : {tag:"ミッションマス", tagClass:"mission", icon:"💋", gain:15};
+  const btns=[{label:"できた！💕", cls:"", onClick:()=>{ closeModal(); sfx.good(); finishEvent(meta.gain); }}];
+  if(p.pass>0) btns.push({label:`パス（1マス戻る・残り${p.pass}）`, cls:"ghost", onClick:()=>doPass()});
+  showModal({tag:meta.tag, tagClass:meta.tagClass, icon:meta.icon,
+    title:escapeHtml(text),
+    html:`<p class="muted center" style="font-size:.8rem">${p.emoji} ${escapeHtml(p.name)} の番</p>`,
+    buttons:btns});
+}
+function doPass(){
+  const p=state.players[state.turn];
+  if(p.pass<=0) return;
+  p.pass--; closeModal();
+  toast("パス！1マス戻ります");
+  moveBy(state.turn, -1, ()=>finishEvent(0));
+}
+
+/* ---------- ⭐ ドキドキタイム ---------- */
+function openDokidoki(fromOverflow){
+  const text=pick_(CARDS.dokidoki[state.spice]);
+  showModal({tag:"ドキドキタイム", tagClass:"dokidoki", icon:"⭐💗",
+    title:escapeHtml(text),
+    html:`<p class="muted center" style="font-size:.8rem">${fromOverflow?"メーターが満タン！ふたりのドキドキが弾けた！":"特別なマスに止まった！"}</p>`,
+    buttons:[{label:"クリア！💞", onClick:()=>{ closeModal(); sfx.love(); finishEvent(fromOverflow?0:22, !fromOverflow); }}]});
+}
+
+/* ---------- 🎁 ごほうび ---------- */
+function openReward(){
+  const p=state.players[state.turn];
+  const c=pick_(CARDS.coupon); p.coupons.push(c);
+  showModal({tag:"ごほうびマス", tagClass:"reward", icon:"🎁",
+    title:`「${escapeHtml(c)}」をGET！`,
+    html:`<p class="muted center" style="font-size:.8rem">${p.emoji} ${escapeHtml(p.name)} が獲得。ゲーム後に使ってね💕</p>`,
+    buttons:[{label:"やった！", cls:"gold", onClick:()=>{ closeModal(); sfx.good(); finishEvent(5); }}]});
+}
+
+/* ---------- 🎲 ハプニング ---------- */
+function openHappening(){
+  const ev=pick_(HAPPENINGS);
+  showModal({tag:"ハプニングマス", tagClass:"happening", icon:"🎲",
+    title:escapeHtml(ev.text),
+    buttons:[{label:"OK！", onClick:()=>{ closeModal(); applyHappening(ev); }}]});
+}
+function applyHappening(ev){
+  const pi=state.turn;
+  if(ev.type==="move"){ moveBy(pi, ev.n, ()=>{ if(state.players[pi].pos>=state.len-1) return finale(pi); finishEvent(5); }); }
+  else if(ev.type==="swap"){ const a=state.players[0].pos, b=state.players[1].pos; state.players[0].pos=b; state.players[1].pos=a; renderBoard(); renderPlayers(); scrollToCurrent();
+    const w=state.players.find(p=>p.pos>=state.len-1); if(w) return finale(state.players.indexOf(w)); finishEvent(5); }
+  else if(ev.type==="extra"){ state.extra=true; finishEvent(5); }
+  else if(ev.type==="skip"){ state.players[pi].skip=true; finishEvent(5); }
+}
+
+/* ============================================================
+   ⚔️ 対決（ミニゲーム）
+============================================================ */
+const MINIGAMES = [
+  { name:"早押しタップ", fn:mgReaction },
+  { name:"連打対決", fn:mgMash },
+  { name:"記憶ゲーム", fn:mgMemory },
+  { name:"見つめ合いガマン", fn:mgGaze },
+  { name:"ジェスチャー当て", fn:mgGesture },
+  { name:"にらめっこ", fn:mgStare },
+];
+const GESTURE_WORDS=["ネコ","ゴリラ","プロポーズ","歯みがき","ペンギン","ラーメンを食べる","サッカー","写真を撮る","泳ぐ","ロボット","赤ちゃん","スマホに夢中","ダンス","力持ち"];
+
+function startDuel(){
+  const g=pick_(MINIGAMES);
+  showModal({tag:"対決マス", tagClass:"duel", icon:"⚔️",
+    title:`ミニゲーム対決！<br><span style="color:var(--purple)">「${g.name}」</span>`,
+    html:`<p class="muted center" style="font-size:.82rem">負けた方はスパイス度に応じた罰ミッション💋</p>`,
+    buttons:[{label:"勝負する！🔥", cls:"", onClick:()=>{ closeModal(); openDuelStage(g); }}]});
+}
+function openDuelStage(g){
+  const ov=document.createElement("div"); ov.className="overlay"; ov.id="modal";
+  ov.innerHTML=`<div class="sheet"><span class="tag duel">⚔️ ${g.name}</span><div id="mg-body"></div></div>`;
+  document.body.appendChild(ov);
+  g.fn(ov.querySelector("#mg-body"), state.players, duelResult);
+}
+function duelResult(result){ // result: 0 | 1 | 'draw'
+  closeModal();
+  if(result==="draw"){
+    showModal({tag:"対決マス", tagClass:"duel", icon:"🤝",
+      title:"引き分け！<br>2人ともナイス勝負💕",
+      buttons:[{label:"次へ", onClick:()=>{ closeModal(); sfx.good(); finishEvent(12); }}]});
+    return;
+  }
+  const loser=1-result, winner=result;
+  // 勝者に時々ごほうび
+  let bonus="";
+  if(Math.random()<0.35){ const c=pick_(CARDS.coupon); state.players[winner].coupons.push(c); bonus=`<br><span style="color:var(--gold)">🎁 ${state.players[winner].name} は「${escapeHtml(c)}」もGET！</span>`; }
+  const pen=pick_(CARDS.mission[state.spice]);
+  sfx.love();
+  showModal({tag:"勝負あり！", tagClass:"duel", icon:"🏆",
+    title:`${state.players[winner].emoji} ${escapeHtml(state.players[winner].name)} の勝ち！`,
+    html:`<p class="center">${state.players[loser].emoji} <b>${escapeHtml(state.players[loser].name)}</b> は罰ミッション💋</p>
+      <div class="panel" style="margin-top:8px; text-align:center">${escapeHtml(pen)}</div>${bonus}`,
+    buttons:[{label:"やりきった！💞", onClick:()=>{ closeModal(); finishEvent(14); }}]});
+}
+
+/* ---- 1) 早押しタップ（順番に反応速度計測） ---- */
+function mgReaction(c, players, done){
+  const times=[null,null]; let idx=0;
+  function run(){
+    const p=players[idx];
+    c.innerHTML=`<h3 class="center">${p.emoji} ${escapeHtml(p.name)} の番</h3>
+      <p class="center muted" style="font-size:.85rem">画面が<b>緑</b>になったら<br>できるだけ早くタップ！</p>
+      <button class="mg-pad" id="pad" style="background:#c0392b">待て…（フライング注意）</button>`;
+    const pad=c.querySelector("#pad"); let ready=false, t0=0, timer;
+    timer=setTimeout(()=>{ ready=true; t0=performance.now(); pad.style.background="#2ecc71"; pad.textContent="今だ！タップ！"; beep(880,0.08); }, 1200+Math.random()*3000);
+    pad.onclick=()=>{
+      if(!ready){ clearTimeout(timer); times[idx]=99999; pad.style.background="#7f8c8d"; pad.textContent="フライング！💥"; }
+      else { times[idx]=Math.round(performance.now()-t0); pad.style.background="#27ae60"; pad.textContent=times[idx]+" ms！"; }
+      pad.disabled=true; sfx.dice();
+      setTimeout(()=>{ idx++; if(idx<2) run(); else judge(); }, 900);
+    };
+  }
+  function judge(){
+    let res = times[0]===times[1] ? "draw" : (times[0]<times[1] ? 0 : 1);
+    c.innerHTML=`<h3 class="center">結果</h3><p class="center">${players[0].name}: ${fmtms(times[0])}<br>${players[1].name}: ${fmtms(times[1])}</p>`;
+    setTimeout(()=>done(res), 900);
+  }
+  function fmtms(v){ return v>=99999?"フライング":v+" ms"; }
+  run();
+}
+
+/* ---- 2) 連打対決（順番に5秒） ---- */
+function mgMash(c, players, done){
+  const counts=[0,0]; let idx=0;
+  function run(){
+    const p=players[idx]; let n=0, left=5, running=false;
+    c.innerHTML=`<h3 class="center">${p.emoji} ${escapeHtml(p.name)} の番</h3>
+      <div class="mg-count" id="cnt">タップで開始</div>
+      <p class="center muted" id="tl">5秒間できるだけ連打！</p>
+      <button class="mg-pad" id="pad" style="background:linear-gradient(135deg,#8b5cf6,#ff5c8a)">連打！！</button>`;
+    const pad=c.querySelector("#pad"), cnt=c.querySelector("#cnt"), tl=c.querySelector("#tl");
+    let iv;
+    pad.onclick=()=>{
+      if(!running){ running=true; cnt.textContent="0"; iv=setInterval(()=>{ left--; tl.textContent="のこり "+left+" 秒"; if(left<=0){ clearInterval(iv); end(); } },1000); }
+      n++; cnt.textContent=n; beep(500+Math.min(n*8,600),0.02,"square",0.1);
+    };
+    function end(){ pad.disabled=true; counts[idx]=n; cnt.textContent=n+" 回！"; setTimeout(()=>{ idx++; if(idx<2) run(); else judge(); },900); }
+  }
+  function judge(){
+    let res = counts[0]===counts[1] ? "draw" : (counts[0]>counts[1] ? 0 : 1);
+    c.innerHTML=`<h3 class="center">結果</h3><p class="center">${players[0].name}: ${counts[0]} 回<br>${players[1].name}: ${counts[1]} 回</p>`;
+    setTimeout(()=>done(res),900);
+  }
+  run();
+}
+
+/* ---- 3) 記憶ゲーム（順番に光る順を再現・到達レベル比較） ---- */
+function mgMemory(c, players, done){
+  const levels=[0,0]; let idx=0;
+  function run(){
+    const p=players[idx]; let seq=[], step=0, showing=true;
+    c.innerHTML=`<h3 class="center">${p.emoji} ${escapeHtml(p.name)} の番</h3>
+      <p class="center muted" id="st" style="font-size:.85rem">光った順にタップ！</p>
+      <div class="mg-grid" id="grid">${[0,1,2,3].map(i=>`<button class="mg-mem m${i}" data-k="${i}"></button>`).join("")}</div>`;
+    const st=c.querySelector("#st"); const pads=[...c.querySelectorAll(".mg-mem")];
+    function next(){
+      seq.push(Math.floor(Math.random()*4)); step=0; showing=true; st.textContent="レベル "+seq.length+"：おぼえて！";
+      let i=0; const iv=setInterval(()=>{ if(i>0) pads[seq[i-1]].classList.remove("lit");
+        if(i>=seq.length){ clearInterval(iv); showing=false; st.textContent="どうぞ！"; return; }
+        pads[seq[i]].classList.add("lit"); beep(440+seq[i]*120,0.12); i++;
+      }, 620);
+    }
+    pads.forEach(pd=>pd.onclick=()=>{
+      if(showing) return; const k=+pd.dataset.k; pd.classList.add("lit"); beep(440+k*120,0.1); setTimeout(()=>pd.classList.remove("lit"),150);
+      if(k===seq[step]){ step++; if(step>=seq.length){ if(seq.length>=6){ finishP(seq.length); } else setTimeout(next,500); } }
+      else { finishP(seq.length-1); }
+    });
+    function finishP(lv){ levels[idx]=lv; st.textContent="レベル "+lv+" まで！"; showing=true; setTimeout(()=>{ idx++; if(idx<2) run(); else judge(); },1000); }
+    setTimeout(next,600);
+  }
+  function judge(){
+    let res = levels[0]===levels[1] ? "draw" : (levels[0]>levels[1] ? 0 : 1);
+    c.innerHTML=`<h3 class="center">結果</h3><p class="center">${players[0].name}: レベル${levels[0]}<br>${players[1].name}: レベル${levels[1]}</p>`;
+    setTimeout(()=>done(res),900);
+  }
+  run();
+}
+
+/* ---- 4) 見つめ合いガマン（IRL・10秒／自己申告） ---- */
+function mgGaze(c, players, done){
+  let left=10;
+  c.innerHTML=`<h3 class="center">👀 見つめ合いガマン</h3>
+    <p class="center muted" style="font-size:.85rem">10秒間、目をそらさず見つめ合って！<br>先に笑った・そらした方が負け。</p>
+    <div class="mg-count" id="cnt">10</div>
+    <div class="btns">
+      <button class="btn ghost" id="l0">${players[0].emoji} ${escapeHtml(players[0].name)} が負け</button>
+      <button class="btn ghost" id="l1">${players[1].emoji} ${escapeHtml(players[1].name)} が負け</button>
+    </div>`;
+  const cnt=c.querySelector("#cnt");
+  const iv=setInterval(()=>{ left--; cnt.textContent=left; beep(300,0.05); if(left<=0){ clearInterval(iv); cnt.textContent="耐えきった！💕"; setTimeout(()=>done("draw"),700); } },1000);
+  c.querySelector("#l0").onclick=()=>{ clearInterval(iv); done(1); };
+  c.querySelector("#l1").onclick=()=>{ clearInterval(iv); done(0); };
+}
+
+/* ---- 5) ジェスチャー当て（IRL・出題→勝敗申告） ---- */
+function mgGesture(c, players, done){
+  const actor=state.turn, guesser=1-actor;
+  const word=pick_(GESTURE_WORDS);
+  c.innerHTML=`<h3 class="center">🎭 ジェスチャー当て</h3>
+    <p class="center muted" style="font-size:.85rem">${players[actor].emoji} <b>${escapeHtml(players[actor].name)}</b> だけ見て！<br>声を出さずに演じて、相手に当ててもらおう。</p>
+    <button class="btn gold" id="reveal">お題を見る（演じる人だけ）</button>
+    <div id="after" class="hidden">
+      <div class="panel center" style="margin:12px 0; font-size:1.3rem; font-weight:800">お題：${escapeHtml(word)}</div>
+      <div class="mg-count" id="cnt">45</div>
+      <div class="btns">
+        <button class="btn" id="ok">当たった！🎉</button>
+        <button class="btn ghost" id="ng">時間切れ・降参</button>
+      </div>
+    </div>`;
+  c.querySelector("#reveal").onclick=()=>{ c.querySelector("#reveal").classList.add("hidden"); c.querySelector("#after").classList.remove("hidden"); startTimer(); };
+  let iv;
+  function startTimer(){ let left=45; const cnt=c.querySelector("#cnt");
+    iv=setInterval(()=>{ left--; cnt.textContent=left; if(left<=0){ clearInterval(iv); cnt.textContent="時間切れ！"; } },1000); }
+  c.querySelector("#ok").onclick=()=>{ clearInterval(iv); done(guesser); };   // 当てた人（相手）の勝ち
+  c.querySelector("#ng").onclick=()=>{ clearInterval(iv); done(actor); };     // 当てられなければ演者の勝ち
+}
+
+/* ---- 6) にらめっこ（IRL・勝敗申告） ---- */
+function mgStare(c, players, done){
+  c.innerHTML=`<h3 class="center">😆 にらめっこ</h3>
+    <p class="center muted" style="font-size:.85rem">「笑ったら負け」！<br>変顔OK。先に笑った方が負け。</p>
+    <div class="mg-count">👀 ⚔️ 👀</div>
+    <div class="btns">
+      <button class="btn ghost" id="l0">${players[0].emoji} ${escapeHtml(players[0].name)} が笑った</button>
+      <button class="btn ghost" id="l1">${players[1].emoji} ${escapeHtml(players[1].name)} が笑った</button>
+      <button class="btn ghost" id="dr">2人とも耐えた（引き分け）</button>
+    </div>`;
+  c.querySelector("#l0").onclick=()=>done(1);
+  c.querySelector("#l1").onclick=()=>done(0);
+  c.querySelector("#dr").onclick=()=>done("draw");
+}
+
+/* ============================================================
+   フィナーレ
+============================================================ */
+function finale(winnerIdx){
+  state.finished=true; saveGame();
+  busy=true;
+  sfx.win();
+  confetti();
+  const w=state.players[winnerIdx], l=state.players[1-winnerIdx];
+  const couponHtml=(p)=> p.coupons.length? `<ul class="list-coupons">${p.coupons.map(c=>`<li>🎁${escapeHtml(c)}</li>`).join("")}</ul>` : `<p class="muted" style="font-size:.8rem">なし</p>`;
+  showModal({tag:"🏁 GOAL！", tagClass:"dokidoki", icon:"🎆💞🎆",
+    title:`${w.emoji} ${escapeHtml(w.name)} が先にゴール！`,
+    html:`<p class="center" style="font-weight:700">でも、本当の勝者は…<br>楽しんだ2人です💕</p>
+      <div class="panel" style="margin-top:12px">
+        <p style="margin:.2em 0"><b>💓 ドキドキタイム発動：</b> ${state.dokidokiCount} 回</p>
+        <p style="margin:.6em 0 .2em"><b>${w.emoji} ${escapeHtml(w.name)} の獲得券</b></p>${couponHtml(w)}
+        <p style="margin:.6em 0 .2em"><b>${l.emoji} ${escapeHtml(l.name)} の獲得券</b></p>${couponHtml(l)}
+      </div>
+      <p class="center muted" style="font-size:.8rem; margin-top:10px">獲得した券は、このあと2人で使ってね😊</p>`,
+    buttons:[
+      {label:"もう一度あそぶ 💘", onClick:()=>{ closeModal(); resetToSetup(); }},
+    ]});
+}
+function confetti(){
+  const em=["💗","💞","✨","🎉","💕","⭐","🌸"];
+  for(let i=0;i<40;i++){
+    const s=document.createElement("div"); s.className="confetti"; s.textContent=em[i%em.length];
+    s.style.left=Math.random()*100+"vw"; s.style.animationDuration=(2+Math.random()*2.5)+"s"; s.style.animationDelay=(Math.random()*0.8)+"s";
+    document.body.appendChild(s); setTimeout(()=>s.remove(),5000);
+  }
+}
+
+/* ---------- リセット ---------- */
+function resetToSetup(){
+  localStorage.removeItem(SAVE_KEY);
+  busy=false; state=null;
+  document.getElementById("screen-game").classList.add("hidden");
+  document.getElementById("screen-setup").classList.remove("hidden");
+  document.getElementById("resume-box").classList.add("hidden");
+  window.scrollTo(0,0);
+}
+
+/* ---------- ヘッダー操作 ---------- */
+function bindGameControls(){
+  document.getElementById("btn-roll").onclick=rollDice;
+  document.getElementById("btn-spice").onclick=()=>{
+    const order=["pure","amaama","otona"]; const i=order.indexOf(state.spice);
+    state.spice=order[(i+1)%3]; updateSpiceLabel(); saveGame(); toast("スパイス度："+SPICE_LABEL[state.spice]+" に変更🌶️");
+  };
+  document.getElementById("btn-sound").onclick=()=>{
+    sound=!sound; document.getElementById("btn-sound").textContent= sound? "🔊 音ON":"🔈 音OFF";
+    if(sound) sfx.good();
+  };
+  document.getElementById("btn-reset").onclick=()=>{
+    showModal({icon:"↺", title:"最初からやり直す？", html:`<p class="center muted" style="font-size:.85rem">今の進行は消えます。</p>`,
+      buttons:[
+        {label:"やり直す", cls:"", onClick:()=>{ closeModal(); resetToSetup(); }},
+        {label:"つづける", cls:"ghost", onClick:closeModal},
+      ]});
+  };
+}
+
+/* ---------- 起動 ---------- */
+buildSetup();
+bindGameControls();
+</script>
