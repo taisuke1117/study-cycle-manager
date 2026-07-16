@@ -299,6 +299,15 @@ const HAPPENINGS = [
   .tag.reward{background:rgba(245,179,1,.2); color:#a67c00}
   .tag.dokidoki{background:linear-gradient(135deg,var(--pink),var(--purple)); color:#fff}
 
+  /* ---- Timer (mission cards) ---- */
+  .timer-box{margin:16px 0 4px; text-align:center}
+  .timer-display{font-size:2.6rem; font-weight:900; font-variant-numeric:tabular-nums; color:var(--pink-d)}
+  .timer-box.done .timer-display{color:var(--gold); font-size:1.5rem}
+  .timer-bar{height:10px; border-radius:999px; background:var(--line); overflow:hidden; margin-top:8px}
+  .timer-bar-fill{height:100%; width:100%; border-radius:999px; background:linear-gradient(90deg,var(--pink),var(--purple)); transition:width 1s linear}
+  .timer-controls{display:flex; gap:8px; justify-content:center; margin-top:10px}
+  .timer-controls .btn{width:auto; flex:0 0 auto}
+
   /* ---- Minigame ---- */
   .mg-pad{width:100%; min-height:150px; border-radius:20px; font-size:1.3rem; font-weight:800; color:#fff; margin:12px 0}
   .mg-count{font-size:3rem; font-weight:900; text-align:center; margin:8px 0}
@@ -415,6 +424,7 @@ let state = null;
 let sound = false;
 let audioCtx = null;
 let busy = false; // アニメ・モーダル中の多重操作防止
+let activeTimerInterval = null; // ミッションタイマー用
 
 /* ---------- 効果音（WebAudio・依存なし） ---------- */
 function beep(freq=440, dur=0.08, type="sine", vol=0.2){
@@ -434,7 +444,9 @@ const sfx = {
   good:()=>{beep(660,0.1,"sine",0.2); setTimeout(()=>beep(880,0.14,"sine",0.2),90);},
   love:()=>{beep(523,0.1); setTimeout(()=>beep(659,0.1),100); setTimeout(()=>beep(784,0.18),200);},
   win:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.18,"sine",0.22),i*120));},
+  timeup:()=>{[784,1046,1318].forEach((f,i)=>setTimeout(()=>beep(f,0.15,"sine",0.22),i*90));},
 };
+function vibrate(pattern){ try{ if(navigator.vibrate) navigator.vibrate(pattern||[200,60,200]); }catch(e){} }
 
 /* ---------- Toast ---------- */
 let toastTimer=null;
@@ -671,9 +683,54 @@ function showModal({tag, tagClass, icon, title, html, buttons}){
   (buttons||[]).forEach((b,i)=>{ ov.querySelector(`[data-i="${i}"]`).onclick=()=>b.onClick(); });
   return ov;
 }
-function closeModal(){ const m=document.getElementById("modal"); if(m) m.remove(); }
+function closeModal(){
+  if(activeTimerInterval){ clearInterval(activeTimerInterval); activeTimerInterval=null; }
+  const m=document.getElementById("modal"); if(m) m.remove();
+}
 
 function pick_(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ---------- ミッションタイマー ---------- */
+function parseDurationSeconds(text){
+  const min=text.match(/(\d+)\s*分/), sec=text.match(/(\d+)\s*秒/);
+  if(!min && !sec) return null;
+  return (min?parseInt(min[1],10)*60:0) + (sec?parseInt(sec[1],10):0);
+}
+function timerBlockHtml(seconds){
+  return `<div class="timer-box" id="timer-box">
+    <div class="timer-display" id="timer-display">${seconds}秒</div>
+    <div class="timer-bar"><div class="timer-bar-fill" id="timer-bar-fill"></div></div>
+    <div class="timer-controls">
+      <button class="btn ghost small" id="timer-toggle" type="button">▶ タイマー開始</button>
+      <button class="btn ghost small" id="timer-reset" type="button">↺ リセット</button>
+    </div>
+  </div>`;
+}
+function attachTimer(seconds){
+  if(activeTimerInterval){ clearInterval(activeTimerInterval); activeTimerInterval=null; }
+  const box=document.getElementById("timer-box"), disp=document.getElementById("timer-display"),
+        bar=document.getElementById("timer-bar-fill"), toggle=document.getElementById("timer-toggle"),
+        reset=document.getElementById("timer-reset");
+  if(!box||!disp||!bar||!toggle||!reset) return;
+  let remaining=seconds, running=false;
+  render();
+  function render(){ disp.textContent=remaining+"秒"; bar.style.width=(remaining/seconds*100)+"%"; }
+  function tick(){
+    remaining--;
+    if(remaining<=0){
+      remaining=0; bar.style.width="0%"; stop();
+      box.classList.add("done"); disp.textContent="🎉 タイムアップ！";
+      sfx.timeup(); vibrate();
+      return;
+    }
+    render();
+    if(remaining<=3) beep(500+remaining*80,0.08,"triangle",0.15);
+  }
+  function start(){ if(running) return; running=true; toggle.textContent="⏸ 一時停止"; activeTimerInterval=setInterval(tick,1000); }
+  function stop(){ running=false; toggle.textContent = remaining<=0? "✅ 完了" : "▶ 再開"; if(activeTimerInterval){ clearInterval(activeTimerInterval); activeTimerInterval=null; } }
+  toggle.onclick=()=>{ running? stop() : start(); };
+  reset.onclick=()=>{ stop(); remaining=seconds; box.classList.remove("done"); toggle.textContent="▶ タイマー開始"; render(); };
+}
 
 /* ---------- ❤️/💋 カード ---------- */
 function openCard(kind){
@@ -682,12 +739,14 @@ function openCard(kind){
   const meta = kind==="talk"
     ? {tag:"トークマス", tagClass:"talk", icon:"❤️", gain:8}
     : {tag:"ミッションマス", tagClass:"mission", icon:"💋", gain:15};
+  const dur=parseDurationSeconds(text);
   const btns=[{label:"できた！💕", cls:"", onClick:()=>{ closeModal(); sfx.good(); finishEvent(meta.gain); }}];
   if(p.pass>0) btns.push({label:`パス（1マス戻る・残り${p.pass}）`, cls:"ghost", onClick:()=>doPass()});
   showModal({tag:meta.tag, tagClass:meta.tagClass, icon:meta.icon,
     title:escapeHtml(text),
-    html:`<p class="muted center" style="font-size:.8rem">${p.emoji} ${escapeHtml(p.name)} の番</p>`,
+    html:`<p class="muted center" style="font-size:.8rem">${p.emoji} ${escapeHtml(p.name)} の番</p>${dur?timerBlockHtml(dur):""}`,
     buttons:btns});
+  if(dur) attachTimer(dur);
 }
 function doPass(){
   const p=state.players[state.turn];
@@ -700,10 +759,12 @@ function doPass(){
 /* ---------- ⭐ ドキドキタイム ---------- */
 function openDokidoki(fromOverflow){
   const text=pick_(CARDS.dokidoki[state.spice]);
+  const dur=parseDurationSeconds(text);
   showModal({tag:"ドキドキタイム", tagClass:"dokidoki", icon:"⭐💗",
     title:escapeHtml(text),
-    html:`<p class="muted center" style="font-size:.8rem">${fromOverflow?"メーターが満タン！ふたりのドキドキが弾けた！":"特別なマスに止まった！"}</p>`,
+    html:`<p class="muted center" style="font-size:.8rem">${fromOverflow?"メーターが満タン！ふたりのドキドキが弾けた！":"特別なマスに止まった！"}</p>${dur?timerBlockHtml(dur):""}`,
     buttons:[{label:"クリア！💞", onClick:()=>{ closeModal(); sfx.love(); finishEvent(fromOverflow?0:22, !fromOverflow); }}]});
+  if(dur) attachTimer(dur);
 }
 
 /* ---------- 🎁 ごほうび ---------- */
@@ -771,12 +832,14 @@ function duelResult(result){ // result: 0 | 1 | 'draw'
   let bonus="";
   if(Math.random()<0.35){ const c=pick_(CARDS.coupon); state.players[winner].coupons.push(c); bonus=`<br><span style="color:var(--gold)">🎁 ${state.players[winner].name} は「${escapeHtml(c)}」もGET！</span>`; }
   const pen=pick_(CARDS.mission[state.spice]);
+  const dur=parseDurationSeconds(pen);
   sfx.love();
   showModal({tag:"勝負あり！", tagClass:"duel", icon:"🏆",
     title:`${state.players[winner].emoji} ${escapeHtml(state.players[winner].name)} の勝ち！`,
     html:`<p class="center">${state.players[loser].emoji} <b>${escapeHtml(state.players[loser].name)}</b> は罰ミッション💋</p>
-      <div class="panel" style="margin-top:8px; text-align:center">${escapeHtml(pen)}</div>${bonus}`,
+      <div class="panel" style="margin-top:8px; text-align:center">${escapeHtml(pen)}</div>${dur?timerBlockHtml(dur):""}${bonus}`,
     buttons:[{label:"やりきった！💞", onClick:()=>{ closeModal(); finishEvent(14); }}]});
+  if(dur) attachTimer(dur);
 }
 
 /* ---- 1) 早押しタップ（順番に反応速度計測） ---- */
