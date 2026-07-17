@@ -376,6 +376,10 @@ const HAPPENINGS = [
         <div class="opt" data-v="44">じっくり<small>約90分・44マス</small></div>
       </div>
 
+      <div style="height:16px"></div>
+      <label>🎛 マスの構成</label>
+      <div class="seg" id="seg-board" style="margin-top:6px"></div>
+
       <div style="height:22px"></div>
       <button class="btn" id="btn-start">💘 ゲームスタート</button>
       <p class="muted center" style="font-size:.74rem; margin:12px 0 0">
@@ -463,8 +467,16 @@ function toast(msg, ms=2000){
 }
 
 /* ---------- セットアップUI ---------- */
-let pick = { p1:0, p2:1, spice:"amaama", len:32 };
+let pick = { p1:0, p2:1, spice:"amaama", len:32, board:"balance" };
 function buildSetup(){
+  const segBoard=document.getElementById("seg-board");
+  Object.entries(BOARD_PRESETS).forEach(([key,preset])=>{
+    const o=document.createElement("div");
+    o.className="opt"+(key===pick.board?" active":""); o.dataset.v=key;
+    o.innerHTML=`${preset.label}<small>${preset.desc}</small>`;
+    o.onclick=()=>{ pick.board=key; [...segBoard.children].forEach(x=>x.classList.toggle("active",x===o)); };
+    segBoard.appendChild(o);
+  });
   const wrap1=document.getElementById("p1emojis"), wrap2=document.getElementById("p2emojis");
   EMOJIS.forEach((e,i)=>{
     const a=document.createElement("button"); a.className="em"+(i===pick.p1?" active":""); a.textContent=e;
@@ -493,11 +505,18 @@ function buildSetup(){
 }
 
 /* ---------- ボード生成 ---------- */
-function generateBoard(len){
+const BOARD_PRESETS = {
+  balance:  { label:"バランス型",     desc:"標準のバランス",     dist:{ talk:28, mission:28, duel:16, happening:12, dokidoki:8,  reward:8  } },
+  games:    { label:"ゲーム多め",     desc:"ミニゲーム対決中心", dist:{ talk:18, mission:20, duel:34, happening:10, dokidoki:10, reward:8  } },
+  mission:  { label:"ミッション多め", desc:"スキンシップ多め",   dist:{ talk:16, mission:44, duel:12, happening:8,  dokidoki:12, reward:8  } },
+  talk:     { label:"トーク多め",     desc:"会話でじっくり",     dist:{ talk:46, mission:18, duel:12, happening:8,  dokidoki:8,  reward:8  } },
+  dokidoki: { label:"ドキドキ多め",   desc:"ハイテンション",     dist:{ talk:18, mission:22, duel:14, happening:8,  dokidoki:28, reward:10 } },
+};
+function generateBoard(len, presetKey){
   const board=new Array(len);
   board[0]="start"; board[len-1]="goal";
   const weighted=[];
-  const dist={ talk:28, mission:28, duel:16, happening:12, dokidoki:8, reward:8 };
+  const dist=(BOARD_PRESETS[presetKey]||BOARD_PRESETS.balance).dist;
   for(const k in dist){ for(let i=0;i<dist[k];i++) weighted.push(k); }
   let last=null;
   for(let i=1;i<len-1;i++){
@@ -520,8 +539,8 @@ function newGame(){
       {name:n1, emoji:EMOJIS[pick.p1], pos:0, pass:1, skip:false, coupons:[]},
       {name:n2, emoji:EMOJIS[pick.p2], pos:0, pass:1, skip:false, coupons:[]},
     ],
-    turn:0, meter:0, spice:pick.spice, len:pick.len,
-    board:generateBoard(pick.len), finished:false, extra:false, dokidokiCount:0,
+    turn:0, meter:0, spice:pick.spice, len:pick.len, boardPreset:pick.board,
+    board:generateBoard(pick.len, pick.board), finished:false, extra:false, dokidokiCount:0,
   };
   saveGame();
   startGameUI();
